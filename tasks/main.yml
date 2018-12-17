@@ -1,5 +1,5 @@
 ---
-- name: RHEL | Install GitLab GPG key
+- name: Install GitLab GPG key
   rpm_key:
     state: present
     key: https://packages.gitlab.com/gpg.key
@@ -9,6 +9,12 @@
   yum:
     name: '{{ gitlab_runner_packages }}'
     state: present
+
+- name: Enable and start docker
+  systemd:
+      name: docker
+      state: started
+      enabled: true
 
 - name: Add GitLab Runner rpm repo
   template:

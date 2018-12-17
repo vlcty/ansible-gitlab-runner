@@ -9,8 +9,8 @@ gitlab_runner_registration_token: ''
 # Runner description
 gitlab_runner_description: '{{ ansible_hostname }}'
 # Runner executor
-gitlab_runner_executor: 'shell'
+gitlab_runner_executor: 'docker'
 # Default Docker image
-gitlab_runner_docker_image: ''
+gitlab_runner_docker_image: 'base/archlinux'
 # Runner tags
 gitlab_runner_tags: []

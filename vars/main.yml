@@ -3,3 +3,4 @@
 gitlab_runner_packages:
     - pygpgme
     - yum-utils
+    - docker
