@@ -1,2 +1,5 @@
 ---
 # vars file for gitlab-runner
+gitlab_runner_packages:
+    - pygpgme
+    - yum-utils

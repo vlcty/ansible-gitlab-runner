@@ -1,15 +1,48 @@
 ---
-- name: Install GitLab Runner (Debian)
-  include: install-debian.yml
-  when: ansible_os_family == 'Debian'
-
-- name: Install GitLab Runner (RedHat)
-  include: install-redhat.yml
+- name: RHEL | Install GitLab GPG key
+  rpm_key:
+    state: present
+    key: https://packages.gitlab.com/gpg.key
   when: ansible_os_family == 'RedHat'
 
-- name: Set global options
-  include: global-setup.yml
+- name: Install GitLab Runner dependencies
+  yum:
+    name: '{{ gitlab_runner_packages }}'
+    state: present
 
-- name: Register GitLab Runner
-  include: register-runner.yml
+- name: Add GitLab Runner rpm repo
+  template:
+    src: runner_gitlab-ci-multi-runner.repo.j2
+    dest: /etc/yum.repos.d/runner_gitlab-ci-multi-runner.repo
+
+- name: Install GitLab Runner
+  yum:
+    name: gitlab-ci-multi-runner
+    state: latest
+    update_cache: yes
+
+- name: Set concurrent option
+  lineinfile:
+    dest: /etc/gitlab-runner/config.toml
+    regexp: ^concurrent =
+    line: concurrent = {{ gitlab_runner_concurrent }}
+    state: present
+
+- block:
+    - name: List configured runners
+      command: gitlab-runner list
+      register: configured_runners
+      changed_when: False
+
+    - name: Register runner to GitLab
+      command: gitlab-runner register >
+        --non-interactive
+        --url '{{ gitlab_runner_coordinator_url }}'
+        --registration-token '{{ gitlab_runner_registration_token }}'
+        --description '{{ gitlab_runner_description }}'
+        --tag-list '{{ gitlab_runner_tags | join(",") }}'
+        --executor '{{ gitlab_runner_executor }}'
+        --docker-image '{{ gitlab_runner_docker_image }}'
+      when: configured_runners.stderr.find('\n{{ gitlab_runner_description }}') == -1
+
   when: gitlab_runner_registration_token != ''
