@@ -14,5 +14,6 @@ gitlab_runner_executor: 'docker'
 gitlab_runner_docker_image: 'base/archlinux'
 # Runner tags
 gitlab_runner_tags: []
+gitlab_runner_allow_untagged: true
 
 gitlab_runner_privileged: false
