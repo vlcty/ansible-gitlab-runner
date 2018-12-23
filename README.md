@@ -1,70 +1,50 @@
-GitLab Runner
-=============
+# ansible-gitlab-runner
 
-This role will install the [official GitLab Runner](https://gitlab.com/gitlab-org/gitlab-ci-multi-runner)
+Installs the [official GitLab Runner](https://gitlab.com/gitlab-org/gitlab-ci-multi-runner) on CentOS 7 machines using docker as executor.
 
-Requirements
-------------
+This is a forked and adapted repository from [haroldb/ansible-gitlab-runner](https://github.com/haroldb/ansible-gitlab-runner).
 
-This role requires Ansible 2.0 or higher.
+## Variables
 
+These are the available variables:
 
-Role Variables
---------------
+| Variable | Description | Type | Required | Default value |
+|---|---|---|---|---|
+| gitlab_runner_concurrent | How many parallel jobs the runner should work on | Integer | Yes | Numer of CPU cores ansible detects |
+| gitlab_runner_coordinator_url | The URL to the coordinator. You can get it from the GitLab UI | String | Yes | https://gitlab.com/ci |
+| gitlab_runner_registration_token | The register token you get from the GitLab UI | String | Yes | None |
+| gitlab_runner_description | The description of the runner (visible in the GitLab UI) | String | No | The inventory hostname |
+| gitlab_runner_docker_image | The default docker image to use when not specified in the CI file | String | No | base/archlinux |
+| gitlab_runner_tags | The tags associated with the runner | List of strings | No | List containing only 'docker' |
+| gitlab_runner_allow_untagged | Allow this runner to take untagged jobs | Bool | No | false |
+| gitlab_runner_privileged | Should docker images run privileged | Bool | No | false |
 
-`gitlab_runner_concurrent`
-The maximum number of jobs to run concurrently.
-Defaults to the number of processor cores.
+## Implementation suggestion
 
-`gitlab_runner_registration_token`
-The GitLab registration token. If this is specified, a runner will be registered to a GitLab server.
+You probably want to set up more than one runner. I suggest creating a group `gitlab-runner` and add every runner into it. The group variables for that group should contain:
 
-`gitlab_runner_coordinator_url`
-The GitLab coordinator URL.
-Defaults to `https://gitlab.com/ci`.
+* gitlab_runner_coordinator_url
+* gitlab_runner_registration_token
 
-`gitlab_runner_description`
-The description of the runner.
-Defaults to the hostname.
+The rest config should be done using more groups or individual host variables.
 
-`gitlab_runner_executor`
-The executor used by the runner.
-Defaults to `shell`.
+## Security consideration running privileged containers
 
-`gitlab_runner_docker_image`
-The default Docker image to use. Required when executor is `docker`.
+Backstory:   
+I wanted to build docker containers inside a docker container. That's not possible without a privileged container. GitLab runner can start privileged containers if desired. However for most of the tasks it shoul not be necesarry. Therefore the default value for that is false.
 
-`gitlab_runner_tags`
-The tags assigned to the runner,
-Defaults to an empty list.
+Consideration:   
+If strongly suggest using tags to prevent running a job which doesn't need a privileged container on a runner which spawns only privileged containers. Privileged containers circumvent the security settings enforced by docker.
 
-Dependencies
-------------
+If you haven't set your own value for `gitlab_runner_tags` and `gitlab_runner_privileged` then the default tag for every runner is `docker` and it only spawns unprivileged containers.   
+I suggest overwriting the variable using host vars (or group vars if you have more privilged runners) and set new defaults.   
+Set `docker-privileged` for `gitlab_runner_tags` and `gitlab_runner_privileged` to `true`.
 
-None
+In your `.gitlab-ci.yml` you then set for every job the keyword `tags` to `docker`. You are on the safe side. No job can run privileged by accident.   
+If your job requires a privileged container then simply set the keyword `tags` to `docker-privileged`. No job can then run unprivileged by accident.
 
-Example Playbook
-----------------
-```yaml
-- hosts: all
-  remote_user: root
-  vars_files:
-    - vars/main.yml
-  roles:
-    - { role: haroldb.gitlab-runner }
-```
+## Running a runner without tags
 
-Inside `vars/main.yml`
-```yaml
-gitlab_runner_registration_token: 'HUzTMgnxk17YV8Rj8ucQ'
-gitlab_runner_description: 'Example GitLab Runner'
-gitlab_runner_tags:
-  - node
-  - ruby
-  - mysql
-```
+If you are in need of a privileged container I stringly suggest not to run untagged jobs. Chances are high that containers not needing privileges run privileged. See the security consideration chapter.
 
-License
--------
-
-MIT
+If you don't run privileged containers then you could set this option. But in the future you maybe stumble over problems and please don't blame me then.

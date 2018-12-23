@@ -1,4 +1,14 @@
 ---
+- assert:
+    that:
+        - ansible_processor_count is defined
+        - gitlab_runner_coordinator_url is defined
+        - gitlab_runner_registration_token is defined
+        - gitlab_runner_docker_image is defined
+        - gitlab_runner_tags is defined
+        - gitlab_runner_allow_untagged is defined
+        - gitlab_runner_privileged is defined
+
 - name: Install GitLab GPG key
   rpm_key:
     state: present
@@ -43,7 +53,7 @@
     --registration-token '{{ gitlab_runner_registration_token }}'
     --description '{{ gitlab_runner_description }}'
     --tag-list '{{ gitlab_runner_tags | join(",") }}'
-    --executor '{{ gitlab_runner_executor }}'
+    --executor 'docker'
     --docker-image '{{ gitlab_runner_docker_image }}'
     {% if gitlab_runner_privileged == true %}
     --docker-privileged

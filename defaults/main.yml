@@ -3,17 +3,18 @@
 gitlab_runner_concurrent: '{{ ansible_processor_count }}'
 
 # GitLab coordinator URL
-gitlab_runner_coordinator_url: 'https://gitlab.com/ci'
+gitlab_runner_coordinator_url: ''
 # GitLab registration token
 gitlab_runner_registration_token: ''
 # Runner description
 gitlab_runner_description: '{{ inventory_hostname }}'
-# Runner executor
-gitlab_runner_executor: 'docker'
+
 # Default Docker image
 gitlab_runner_docker_image: 'base/archlinux'
 # Runner tags
-gitlab_runner_tags: []
+gitlab_runner_tags:
+    - docker
+
 gitlab_runner_allow_untagged: false
 
 gitlab_runner_privileged: false
