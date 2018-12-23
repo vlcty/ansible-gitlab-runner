@@ -50,20 +50,6 @@
     {% endif %}
   when: installinfo.changed == true
 
-- name: Register runner to GitLab (forced)
-  command: gitlab-runner register >
-    --non-interactive
-    --url '{{ gitlab_runner_coordinator_url }}'
-    --registration-token '{{ gitlab_runner_registration_token }}'
-    --description '{{ gitlab_runner_description }}'
-    --tag-list '{{ gitlab_runner_tags | join(",") }}'
-    --executor '{{ gitlab_runner_executor }}'
-    --docker-image '{{ gitlab_runner_docker_image }}'
-    {% if gitlab_runner_privileged == true %}
-    --docker-privileged
-    {% endif %}
-  when: forceconnect is defined and forceconnect == true
-
 - name: Start gitlab-runner service
   systemd:
       name: gitlab-runner
