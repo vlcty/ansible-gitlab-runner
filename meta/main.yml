@@ -7,13 +7,9 @@ galaxy_info:
   platforms:
   - name: EL
     versions:
-    - all
-  - name: Ubuntu
-    versions:
-    - all
-  - name: Debian
+        - 7
     version:
-    - all
+        - all
   galaxy_tags:
     - development
 dependencies: []
