@@ -58,7 +58,7 @@
     {% if gitlab_runner_privileged == true %}
     --docker-privileged
     {% endif %}
-    {% gitlab_runner_allow_untagged %}
+    {% if gitlab_runner_allow_untagged %}
     --run-untagged
     {% endif %}
   when: installinfo.changed == true
