@@ -23,9 +23,10 @@
 
 - name: Install GitLab Runner
   yum:
-    name: gitlab-ci-multi-runner
-    state: latest
+    name: gitlab-runner
+    state: present
     update_cache: yes
+  register: installinfo
 
 - name: Set concurrent option
   lineinfile:
@@ -33,11 +34,6 @@
     regexp: ^concurrent =
     line: concurrent = {{ gitlab_runner_concurrent }}
     state: present
-
-- name: List configured runners
-  command: gitlab-runner list
-  register: configured_runners
-  changed_when: False
 
 - name: Register runner to GitLab
   command: gitlab-runner register >
@@ -51,7 +47,7 @@
     {% if gitlab_runner_privileged == true %}
     --docker-privileged
     {% endif %}
-  when: configured_runners.stderr.find('\n{{ gitlab_runner_description }}') == -1
+  when: installinfo.changed == true
 
 - name: Register runner to GitLab (forced)
   command: gitlab-runner register >
@@ -66,3 +62,9 @@
     --docker-privileged
     {% endif %}
   when: forceconnect is defined and forceconnect == true
+
+- name: Start gitlab-runner service
+  systemd:
+      name: gitlab-runner
+      state: started
+      enabled: true
