@@ -10,7 +10,8 @@ gitlab_runner_registration_token: ''
 gitlab_runner_description: '{{ inventory_hostname }}'
 
 # Default Docker image
-gitlab_runner_docker_image: 'base/archlinux'
+gitlab_runner_docker_image: 'archlinux/base'
+
 # Runner tags
 gitlab_runner_tags:
     - docker
